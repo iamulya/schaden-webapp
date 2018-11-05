@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+<!-- Third Container (Submit damage assessment)  -->
+<div class="container-fluid text-center" id="third">
+    {% if scroll %}
+    <script>
+    document.location.hash = '#' + '{{ scroll }}';
+</script>
+    {% endif %}
+    <h3>Ergebnisse</h3>
+    <br>
+    <p><img src="{{ url_for('send_file', filename=filename) }}" class="img-thumbnail" id="picture"></p>
+
+    <table>
+        <thead>
+
+        <tr class="row100 head">
+            <th class="cell100 column1"> </th>
+            <th class="cell100 column2 text-center">Ergebnis</th>
+            <th class="cell100 column3 text-center">Details</th>
+        </thead>
+
+        <div class="table100-body js-pscroll">
+            <tbody>
+            {% for item in result %}
+            <tr class="row100 body"><td class="cell100 column1">{{item["text"]}}</td>
+                <td class="cell100 column2">{{item["label"]}}</td>
+                <td class="cell100 column3">{{item['details']}}</td></tr>
+            {% endfor %}
+
+        </div>
+    </table>
+</div>
+
+{% endblock %}
