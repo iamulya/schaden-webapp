@@ -6,6 +6,10 @@ from werkzeug.utils import secure_filename
 
 from webapp import classifier
 
+from flask import Flask, render_template
+from flask_socketio import SocketIO
+
+
 # A <form> tag is marked with enctype=multipart/form-data and an <input type=file> is placed in that form.
 # The application accesses the file from the files dictionary on the request object.
 # use the save() method of the file to save the file permanently somewhere on the filesystem.
@@ -18,7 +22,7 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024  # max upload - 10MB
 app.secret_key = 'secret'
-
+socketio = SocketIO(app)
 
 # check if an extension is valid and that uploads the file and redirects the user to the URL for the uploaded file
 def allowed_file(filename):
@@ -65,13 +69,12 @@ def upload_and_classify():
             # return redirect(url_for('uploaded_file',
             #                         filename=filename))
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            print(classifier.damaged_or_whole(filepath))
-            #model_results = engine.engine(filepath)
+            model_results = classifier.damaged_or_whole(filepath, socketio)
 
-            #return render_template('results.html', result=model_results, scroll='third', filename=filename)
+            return render_template('results.html', result=model_results, scroll='third', filename=filename)
 
-    flash('Invalid file format - please try your upload again.')
-    return redirect(url_for('assess'))
+    #flash('Invalid file format - please try your upload again.')
+    #return redirect(url_for('assess'))
 
 
 # @app.route('/show/<filename>')
@@ -93,5 +96,10 @@ def uploaded_file(filename):
                                filename)
 
 
+@socketio.on('my_event')
+def handle_my_custom_event(json):
+    print('received message: ' + str(json))
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True, use_reloader=False)  # remember to set back to False
+    #app.run(host='0.0.0.0', port=8080, debug=True, use_reloader=False)  # remember to set back to False
+    socketio.run(app)
